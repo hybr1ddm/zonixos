@@ -1,0 +1,67 @@
+name: Build ZonixOS ISO
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instala dependências
+        run: |
+          sudo apt update
+          sudo apt install -y live-build debootstrap squashfs-tools \
+            xorriso grub-pc-bin grub-efi-amd64-bin mtools isolinux curl jq
+
+      - name: Build ISO
+        run: |
+          sudo lb build 2>&1 | tee build.log
+
+      - name: Pega servidor do GoFile
+        if: success()
+        id: gofile_server
+        run: |
+          SERVER=$(curl -s https://api.gofile.io/servers | jq -r '.data.servers[0].name')
+          echo "server=$SERVER" >> $GITHUB_OUTPUT
+
+      - name: Upload ISO pro GoFile
+        if: success()
+        id: gofile_upload
+        run: |
+          ISO=$(ls *.iso *.img 2>/dev/null | head -1)
+          RESPONSE=$(curl -s -F "file=@${ISO}" \
+            "https://${{ steps.gofile_server.outputs.server }}.gofile.io/uploadFile")
+          echo "$RESPONSE"
+          LINK=$(echo "$RESPONSE" | jq -r '.data.downloadPage')
+          echo "link=$LINK" >> $GITHUB_OUTPUT
+
+      - name: Mostra link de download
+        if: success()
+        run: |
+          echo "========================================="
+          echo "✅ ZonixOS ISO pronta!"
+          echo "🔗 Download: ${{ steps.gofile_upload.outputs.link }}"
+          echo "========================================="
+
+      - name: Upload artifact como backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZonixOS-ISO
+          path: |
+            *.iso
+            *.img
+          retention-days: 7
+
+      - name: Upload log se falhar
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log

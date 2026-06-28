@@ -22,7 +22,7 @@ jobs:
 
       - name: Configura GRUB e Build ISO
         run: |
-          sudo lb config --bootloader grub-efi
+          sudo lb config --bootloader grub-efi --binary-images iso-hybrid --uefi true
           sudo lb build 2>&1 | tee build.log
 
       - name: Upload log sempre

@@ -19,9 +19,9 @@ jobs:
           sudo apt update
           sudo apt install -y live-build debootstrap squashfs-tools \
             xorriso grub-pc-bin grub-efi-amd64-bin mtools isolinux curl jq
-
-        - name: Configura e Build ISO
-        run: |
+    
+          - name: Configura e Build ISO
+            run: |
           # Remove configurações anteriores para evitar conflitos
           sudo lb clean
           # Configura o live-build

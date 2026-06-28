@@ -12,3 +12,10 @@ binary/
 build.log
 .build/
 cache/
+chroot/
+binary/
+*.iso
+*.img
+build.log
+.build/
+cache/

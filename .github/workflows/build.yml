@@ -20,9 +20,15 @@ jobs:
           sudo apt install -y live-build debootstrap squashfs-tools \
             xorriso grub-pc-bin grub-efi-amd64-bin mtools isolinux curl jq
 
-      - name: Configura GRUB e Build ISO
+        - name: Configura e Build ISO
         run: |
-          sudo lb config --bootloader grub-efi --binary-images iso-hybrid --uefi true
+          # Remove configurações anteriores para evitar conflitos
+          sudo lb clean
+          # Configura o live-build
+          sudo lb config --bootloader grub-efi --binary-images iso-hybrid
+          # Garante que o suporte EFI será incluído
+          echo "lb_binary_grub2" > auto/binary_grub2
+          # Executa o build
           sudo lb build 2>&1 | tee build.log
 
       - name: Upload log sempre

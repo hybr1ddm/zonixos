@@ -1,0 +1,6 @@
+[Unit]
+Description=Display Manager
+[Service]
+ExecStart=/usr/bin/sddm
+[Install]
+WantedBy=graphical.target

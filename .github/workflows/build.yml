@@ -35,7 +35,7 @@ jobs:
         if: always()
         run: |
           echo "=== Arquivos ISO em qualquer lugar ==="
-          sudo find / -name "*.iso" 2>/dev/null | grep -v proc | grep -v sys
+          sudo find / -name "*.iso" 2>/dev/null | grep -v proc | grep -v sys || true
           echo "=== Conteudo do diretorio atual ==="
           ls -lh
           echo "=== Pasta binary se existir ==="
@@ -52,11 +52,15 @@ jobs:
         if: success()
         id: gofile_upload
         run: |
-          ISO=$(sudo find / -name "*.iso" 2>/dev/null | grep -v proc | grep -v sys | head -1)
-          RESPONSE=$(curl -s -F "file=@${ISO}" \
-            "https://${{ steps.gofile_server.outputs.server }}.gofile.io/uploadFile")
-          LINK=$(echo "$RESPONSE" | jq -r '.data.downloadPage')
-          echo "link=$LINK" >> $GITHUB_OUTPUT
+          ISO=$(sudo find / -name "*.iso" 2>/dev/null | grep -v proc | grep -v sys | head -1 || true)
+          if [ -n "$ISO" ]; then
+            RESPONSE=$(curl -s -F "file=@${ISO}" "https://${{ steps.gofile_server.outputs.server }}.gofile.io/uploadFile")
+            LINK=$(echo "$RESPONSE" | jq -r '.data.downloadPage')
+            echo "link=$LINK" >> $GITHUB_OUTPUT
+          else
+            echo "Nenhuma ISO encontrada para upload."
+            exit 1
+          fi
 
       - name: Mostra link de download
         if: success()

@@ -1,4 +1,4 @@
-name: Eu odeio o gofile
+name: Build ZonixOS ISO
 
 on:
   push:
@@ -24,12 +24,18 @@ jobs:
         run: |
           sudo lb build 2>&1 | tee build.log
 
+      - name: Upload log sempre
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+
       - name: Acha a ISO
         if: success()
         run: |
-          echo "=== Arquivos gerados ==="
-          find . -name "*.iso" -o -name "*.img" 2>/dev/null
-          ls -lh
+          find . -maxdepth 3 -name "*.iso" 2>/dev/null
+          ls -lh *.iso 2>/dev/null || echo "ISO nao encontrada no raiz"
 
       - name: Pega servidor do GoFile
         if: success()
@@ -42,10 +48,9 @@ jobs:
         if: success()
         id: gofile_upload
         run: |
-          ISO=$(find . -name "*.iso" -o -name "*.img" 2>/dev/null | head -1)
+          ISO=$(find . -maxdepth 3 -name "*.iso" | head -1)
           RESPONSE=$(curl -s -F "file=@${ISO}" \
             "https://${{ steps.gofile_server.outputs.server }}.gofile.io/uploadFile")
-          echo "$RESPONSE"
           LINK=$(echo "$RESPONSE" | jq -r '.data.downloadPage')
           echo "link=$LINK" >> $GITHUB_OUTPUT
 
@@ -58,17 +63,9 @@ jobs:
           echo "========================================="
 
       - name: Upload artifact como backup
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: ZonixOS-ISO
-          path: |
-            **/*.iso
-            **/*.img
+          path: "**/*.iso"
           retention-days: 7
-
-      - name: Upload log se falhar
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build.log

@@ -32,10 +32,14 @@ jobs:
           path: build.log
 
       - name: Acha a ISO
-        if: success()
+        if: always()
         run: |
-          find . -maxdepth 3 -name "*.iso" 2>/dev/null
-          ls -lh *.iso 2>/dev/null || echo "ISO nao encontrada no raiz"
+          echo "=== Arquivos ISO em qualquer lugar ==="
+          sudo find / -name "*.iso" 2>/dev/null | grep -v proc | grep -v sys
+          echo "=== Conteudo do diretorio atual ==="
+          ls -lh
+          echo "=== Pasta binary se existir ==="
+          ls -lh binary/ 2>/dev/null || echo "sem pasta binary"
 
       - name: Pega servidor do GoFile
         if: success()
@@ -48,7 +52,7 @@ jobs:
         if: success()
         id: gofile_upload
         run: |
-          ISO=$(find . -maxdepth 3 -name "*.iso" | head -1)
+          ISO=$(sudo find / -name "*.iso" 2>/dev/null | grep -v proc | grep -v sys | head -1)
           RESPONSE=$(curl -s -F "file=@${ISO}" \
             "https://${{ steps.gofile_server.outputs.server }}.gofile.io/uploadFile")
           LINK=$(echo "$RESPONSE" | jq -r '.data.downloadPage')

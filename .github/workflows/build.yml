@@ -69,6 +69,10 @@ jobs:
           echo "ZonixOS ISO pronta!"
           echo "Download: ${{ steps.gofile_upload.outputs.link }}"
 
+      - name: Arruma permissões para o backup
+        if: success()
+        run: sudo chown -R $USER:$USER .
+
       - name: Upload artifact como backup
         if: success()
         uses: actions/upload-artifact@v4

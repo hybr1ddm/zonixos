@@ -20,8 +20,9 @@ jobs:
           sudo apt install -y live-build debootstrap squashfs-tools \
             xorriso grub-pc-bin grub-efi-amd64-bin mtools isolinux curl jq
 
-      - name: Build ISO
+      - name: Configura GRUB e Build ISO
         run: |
+          sudo lb config --bootloader grub-efi
           sudo lb build 2>&1 | tee build.log
 
       - name: Upload log sempre

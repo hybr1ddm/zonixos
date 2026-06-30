@@ -18,9 +18,9 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y live-build debootstrap squashfs-tools \
-            xorriso grub-pc-bin grub-efi-amd64-bin mtools isolinux curl jq
+            xorriso grub-pc-bin grub-efi-amd64-bin mtools isolinux curl jq      
   
-        - name: Configura e Build ISO
+      - name: Configura e Build ISO
         run: |
           sudo lb clean
           sudo lb config --bootloader grub-efi --binary-images iso-hybrid
